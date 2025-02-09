@@ -11,7 +11,10 @@ class MRIClassifier(nn.Module):
         super(MRIClassifier, self).__init__()
         
         # Load a pretrained ResNet-18 backbone
-        self.resnet = models.resnet18(pretrained=pretrained)
+        if pretrained:
+            self.resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+        else:
+            self.resnet = models.resnet18(weights=None)
         
         # Replace the first conv layer if needed (e.g., if your MRI is single-channel)
         # By default, ResNet expects 3-channel (RGB). If your MRI is 1-channel, do this:
@@ -49,11 +52,11 @@ class MRIClassifier(nn.Module):
         
         return latent_vector, logits
 
-# Instantiate the model
-model = MRIClassifier(num_classes=2, embed_dim=128, pretrained=True)
-print(model)
+# # Instantiate the model
+# model = MRIClassifier(num_classes=2, embed_dim=128, pretrained=True)
+# print(model)
 
-print("\n\n\n\n")
+# print("\n\n\n\n")
 
-model_resnet = models.resnet18(pretrained=True)
-print(model_resnet)
+# model_resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+# print(model_resnet)

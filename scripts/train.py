@@ -1,13 +1,16 @@
 import torch
 from torch.utils.data import DataLoader
-import torch.nn.functional as F
+import torch.nn as nn
 from model import MRIClassifier
 from dataset import FastMRIClassificationDataset  # Suppose you have a custom dataset class in dataset.py
 
 def train():
+    # Device selection
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
     # 1. Create dataset objects
-    train_dataset = FastMRIClassificationDataset(..., split='train')
-    val_dataset = FastMRIClassificationDataset(..., split='val')
+    train_dataset = FastMRIClassificationDataset(root_dir="~/trial-project/data/", split='train', center_crop_size=(128, 128))
+    val_dataset = FastMRIClassificationDataset(root_dir="~/trial-project/data/", split='val', center_crop_size=(128, 128))
     
     # 2. Create data loaders
     train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
@@ -15,7 +18,7 @@ def train():
     
     # 3. Instantiate the model
     model = MRIClassifier(num_classes=2, embed_dim=128, pretrained=True)
-    model = model.cuda()  # if you have a GPU
+    model = model.to(device)
     
     # 4. Define optimizer and loss
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
@@ -26,8 +29,9 @@ def train():
         model.train()
         for batch in train_loader:
             images, labels = batch  # images = [B, C, H, W], labels = [B]
-            images = images.cuda()
-            labels = labels.cuda()
+        
+            images = images.to(device)
+            labels = labels.to(device)
             
             # Forward pass
             latent_vector, logits = model(images)
@@ -47,8 +51,8 @@ def train():
         with torch.no_grad():
             for batch in val_loader:
                 images, labels = batch
-                images = images.cuda()
-                labels = labels.cuda()
+                images = images.to(device)
+                labels = labels.to(device)
                 
                 _, logits = model(images)
                 preds = torch.argmax(logits, dim=1)
