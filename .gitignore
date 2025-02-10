@@ -1,6 +1,8 @@
 # for myself
 /data
 /.DS_Store
+/scripts/wandb
+~/trial-project
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
