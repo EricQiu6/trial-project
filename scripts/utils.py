@@ -1,5 +1,8 @@
 import os
 import torch
+from model import MRIClassifier
+import matplotlib.pyplot as plt
+from sklearn.manifold import TSNE
 
 def extract_latent(model, image_tensor):
     """
@@ -13,6 +16,14 @@ def extract_latent(model, image_tensor):
             image_tensor = image_tensor.unsqueeze(0)
         latent_vector, _ = model(image_tensor)
     return latent_vector
+
+def load_model(checkpoint_dir, map_location='cpu'):
+  model = MRIClassifier(num_classes=2, embed_dim=128, pretrained=False)
+  checkpoint = torch.load(checkpoint_dir,map_location=map_location)
+  model.load_state_dict(checkpoint['model_state_dict'])
+  print(f"Loaded model from epoch {checkpoint['epoch']}")
+
+  return model
 
 def save_model(model_name, model_dir, model_state_dict):
   """
