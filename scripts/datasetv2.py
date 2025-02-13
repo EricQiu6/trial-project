@@ -1,9 +1,9 @@
-
-from torch.utils.data import DataLoader
+from pathlib import Path
 import fastmri
 from fastmri.data import transforms as T
-
 from fastmri.data.subsample import create_mask_for_mask_type
+from data_module_custom import FastMriDataModule
+
 # custom transform function for SliceDataset
 
 def custom_transform(kspace, mask, target, attrs, fname, slice_num):
@@ -32,23 +32,25 @@ def custom_transform(kspace, mask, target, attrs, fname, slice_num):
 
 
 def main():
-    # print("Hello, FastMRI!")
-
-    from mri_data_custom import SliceDataset
-
-    train_dataset = SliceDataset(
-        root="/Users/ericq/trial-project/data/knee-train/multicoil-train/",
+    # Instantiate FastMriDataModule
+    data_module = FastMriDataModule(
+        data_path=Path("/Users/ericq/trial-project/official-fitting-data/knee/"),
         challenge="multicoil",
-        transform=custom_transform,
+        train_transform=custom_transform,
+        val_transform=custom_transform,
+        test_transform=custom_transform,
+        batch_size=4,
+        num_workers=2,
     )
 
-    # print("finished creating dataset")
+    # Prepare data (if needed)
+    data_module.prepare_data()
 
-    # Create DataLoader
-    dataloader = DataLoader(train_dataset, batch_size=4, shuffle=False, num_workers=2)
+    # Get train dataloader
+    train_dataloader = data_module.train_dataloader()
 
     # Test the loader
-    for batch in dataloader:
+    for batch in train_dataloader:
         masked_kspace, mask, quick_recon_rss, target, fname, slice_num = batch
         print(f"Masked K-space shape: {masked_kspace.shape}")
         print(f"Mask shape: {mask.shape}")

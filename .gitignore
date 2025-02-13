@@ -3,6 +3,7 @@
 /.DS_Store
 /scripts/wandb
 /models
+/official-fitting-data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
