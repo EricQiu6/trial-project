@@ -305,10 +305,10 @@ class SliceDataset(torch.utils.data.Dataset):
                 metadata, num_slices = self._retrieve_metadata(fname)
 
                 new_raw_samples = []
-                for slice_ind in range(num_slices):
-                    raw_sample = FastMRIRawDataSample(fname, slice_ind, metadata)
-                    if self.raw_sample_filter(raw_sample):
-                        new_raw_samples.append(raw_sample)
+                center_slice_idx = num_slices // 2
+                raw_sample = FastMRIRawDataSample(fname, center_slice_idx, metadata)
+                if self.raw_sample_filter(raw_sample):
+                    new_raw_samples.append(raw_sample)
 
                 self.raw_samples += new_raw_samples
 
@@ -345,6 +345,9 @@ class SliceDataset(torch.utils.data.Dataset):
             ]
 
     def _retrieve_metadata(self, fname):
+
+        print(f"Processing {fname}")
+
         with h5py.File(fname, "r") as hf:
             et_root = etree.fromstring(hf["ismrmrd_header"][()])
 
