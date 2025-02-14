@@ -106,6 +106,8 @@ class FastMriDataModule(pl.LightningDataModule):
         batch_size: int = 1,
         num_workers: int = 4,
         distributed_sampler: bool = False,
+        combine_diff_organs: bool = False,
+        data_paths_for_combine: Optional[Path] = None,
     ):
         """
         Args:
@@ -183,6 +185,8 @@ class FastMriDataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.distributed_sampler = distributed_sampler
+        self.combine_diff_organs = combine_diff_organs
+        self.data_paths_for_combine = data_paths_for_combine
 
     def _create_data_loader(
         self,
@@ -232,6 +236,24 @@ class FastMriDataModule(pl.LightningDataModule):
             ]
             data_transforms = [data_transform, data_transform]
             challenges = [self.challenge, self.challenge]
+            sample_rates, volume_sample_rates = None, None  # default: no subsampling
+            if sample_rate is not None:
+                sample_rates = [sample_rate, sample_rate]
+            if volume_sample_rate is not None:
+                volume_sample_rates = [volume_sample_rate, volume_sample_rate]
+            dataset = CombinedSliceDataset(
+                roots=data_paths,
+                transforms=data_transforms,
+                challenges=challenges,
+                sample_rates=sample_rates,
+                volume_sample_rates=volume_sample_rates,
+                use_dataset_cache=self.use_dataset_cache_file,
+                raw_sample_filter=raw_sample_filter,
+            )
+        elif is_train and self.combine_diff_organs:
+            data_paths = self.data_paths_for_combine
+            data_transforms = [data_transform] * len(data_paths)
+            challenges = [self.challenge] * len(data_paths)
             sample_rates, volume_sample_rates = None, None  # default: no subsampling
             if sample_rate is not None:
                 sample_rates = [sample_rate, sample_rate]
