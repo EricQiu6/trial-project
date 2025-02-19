@@ -23,11 +23,11 @@ def custom_transform_combine(kspace, mask, target, attrs, fname, slice_num):
 
     crop_size = (320, 320)
 
-    print(f"K-space shape before: {kspace.shape}")
+    # print(f"K-space shape before: {kspace.shape}")
     kspace_torch = T.to_tensor(kspace)
-    print(f"K-space shape torch: {kspace_torch.shape}")
+    # print(f"K-space shape torch: {kspace_torch.shape}")
     kspace_torch = center_crop_kspace(kspace_torch, crop_size)
-    print(f"K-space shape after: {kspace_torch.shape}")
+    # print(f"K-space shape after: {kspace_torch.shape}")
     seed = None if not use_seed else tuple(map(ord, fname))
     acq_start = attrs["padding_left"]
     acq_end = attrs["padding_right"]
@@ -98,11 +98,11 @@ def custom_transform_combine_train(kspace, mask, target, attrs, fname, slice_num
 
     crop_size = (320, 320)
 
-    print(f"K-space shape before: {kspace.shape}")
+    # print(f"K-space shape before: {kspace.shape}")
     kspace_torch = T.to_tensor(kspace)
-    print(f"K-space shape torch: {kspace_torch.shape}")
+    # print(f"K-space shape torch: {kspace_torch.shape}")
     kspace_torch = center_crop_kspace(kspace_torch, crop_size)
-    print(f"K-space shape after: {kspace_torch.shape}")
+    # print(f"K-space shape after: {kspace_torch.shape}")
     seed = None if not use_seed else tuple(map(ord, fname))
     acq_start = attrs["padding_left"]
     acq_end = attrs["padding_right"]
@@ -184,11 +184,11 @@ def custom_transform_combine_val(kspace, mask, target, attrs, fname, slice_num):
 
     crop_size = (320, 320)
 
-    print(f"K-space shape before: {kspace.shape}")
+    # print(f"K-space shape before: {kspace.shape}")
     kspace_torch = T.to_tensor(kspace)
-    print(f"K-space shape torch: {kspace_torch.shape}")
+    # print(f"K-space shape torch: {kspace_torch.shape}")
     kspace_torch = center_crop_kspace(kspace_torch, crop_size)
-    print(f"K-space shape after: {kspace_torch.shape}")
+    # print(f"K-space shape after: {kspace_torch.shape}")
     seed = None if not use_seed else tuple(map(ord, fname))
     acq_start = attrs["padding_left"]
     acq_end = attrs["padding_right"]

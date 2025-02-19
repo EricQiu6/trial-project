@@ -346,7 +346,7 @@ class SliceDataset(torch.utils.data.Dataset):
 
     def _retrieve_metadata(self, fname):
 
-        print(f"Processing {fname}")
+        # print(f"Processing {fname}")
 
         with h5py.File(fname, "r") as hf:
             et_root = etree.fromstring(hf["ismrmrd_header"][()])

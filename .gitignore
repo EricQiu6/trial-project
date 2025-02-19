@@ -4,6 +4,10 @@
 /scripts/wandb
 /models
 /official-fitting-data
+/.vscode
+/scripts/fixed_sens_maps.pth
+/scripts/knee_leaderboard_state_dict.pt
+/scripts/dataset_cache.pkl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
