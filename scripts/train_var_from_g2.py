@@ -13,7 +13,7 @@ import os
 
 def train():
 
-    MODEL_NAME = "varnet-2nd-attempt"
+    MODEL_NAME = "varnet-1st-attempt-after-sens-map-fix"
     MODELS_DIR = '/home/sq225/trial-project/models/'
     os.makedirs(MODELS_DIR, exist_ok=True)
     model_dir = os.path.join(MODELS_DIR, MODEL_NAME)
@@ -88,6 +88,7 @@ def train():
 
     # Loss and Optimizer
     criterion = SSIMLoss().to(device)
+    # I don't think adding weight decay helps
     optimizer = optim.Adam(varnet.parameters(), lr=learning_rate)
     varnet.to(device)
     encoder.to(device)
@@ -97,12 +98,12 @@ def train():
     best_val_loss = float("inf")
 
     # Initialize Weights & Biases (Wandb)
-    wandb.init(project="latent-varnet-training", name=MODEL_NAME, config={
-        "epochs": epochs,
-        "batch_size": batch_size,
-        "learning_rate": learning_rate,
-        "latent_dim": latent_dim
-    })
+    # wandb.init(project="latent-varnet-training", name=MODEL_NAME, config={
+    #     "epochs": epochs,
+    #     "batch_size": batch_size,
+    #     "learning_rate": learning_rate,
+    #     "latent_dim": latent_dim
+    # })
 
     # Training Loop
     for epoch in range(epochs):
@@ -125,6 +126,12 @@ def train():
 
             # Step 2: Pass k-space and latent vector to VarNet
             output = varnet(masked_kspace=masked_kspace, mask=mask, latent_vector=latent_vector, sens_maps=sens_maps)
+
+            # for name, param in varnet.named_parameters():
+            #     if param.grad is None:
+            #         print(f"WARNING: No gradient for {name}")
+            #     else:
+            #         print(f"Gradient norm for {name}: {torch.norm(param.grad)}")
 
             # Ensure output and target have the same shape
             output, target = transforms.center_crop_to_smallest(output, target)
@@ -152,10 +159,20 @@ def train():
 
             optimizer.zero_grad()
             loss.backward()
+
+            for name, param in varnet.named_parameters():
+                if param.grad is None:
+                    print(f"WARNING: No gradient for {name}")
+                else:
+                    # print(f"Gradient norm for {name}: {torch.norm(param.grad)}")
+                    if torch.isnan(param.grad).any():
+                        print(f"ERROR: NaN detected in gradient of {name}")
+                        exit(1)
+
             optimizer.step()
 
             running_loss += loss.item()
-            wandb.log({"train_loss": loss.item()})
+            # wandb.log({"train_loss": loss.item()})
 
         avg_train_loss = running_loss / len(train_loader)
         print(f"Epoch [{epoch+1}/{epochs}], Train Loss: {avg_train_loss:.4f}")
@@ -200,7 +217,7 @@ def train():
 
             avg_val_loss = val_loss / len(val_loader)
             print(f"Epoch [{epoch}/{epochs}], Validation Loss: {avg_val_loss:.4f}")
-            wandb.log({"val_loss": avg_val_loss})
+            # wandb.log({"val_loss": avg_val_loss})
 
             # Save Checkpoints
             save_checkpoint(varnet, optimizer, epoch, dir=checkpoint_dir, filename=f"checkpoint_{epoch}.pth")
@@ -210,7 +227,7 @@ def train():
                 print("Saved best model checkpoint.")
 
     # Finalize Wandb
-    wandb.finish()
+    # wandb.finish()
     print("Training completed successfully!")
 
 if __name__ == '__main__':

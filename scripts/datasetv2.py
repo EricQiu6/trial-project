@@ -162,7 +162,7 @@ def custom_transform_combine_train(kspace, mask, target, attrs, fname, slice_num
 
     # Load precomputed sensitivity maps
     fname_stem = Path(fname).stem
-    save_dir = Path(f"sens_maps2/train/{fname_stem}")  # Adjust split as needed
+    save_dir = Path(f"sens_maps_after_checking_fft/train/{fname_stem}")  # Adjust split as needed
     sens_map_path = save_dir / f"sens_map_slice{slice_num}.pt"
     sens_maps = torch.load(sens_map_path)
     
