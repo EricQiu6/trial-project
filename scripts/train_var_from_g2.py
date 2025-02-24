@@ -193,6 +193,11 @@ def train():
                         
                     )
 
+                    # why the fuck would the sens map be nan still wuwuuwuwuwuwu
+                    if torch.isnan(sens_maps).any():
+                        print("ERROR: `sens_map` loaded from batch contains NaNs")
+                        exit(1)
+
                     latent_vector, _ = encoder(quick_recon_rss)
                     output = varnet(masked_kspace=masked_kspace, mask=mask, latent_vector=latent_vector, sens_maps=sens_maps)
                     

@@ -164,7 +164,12 @@ def custom_transform_combine_train(kspace, mask, target, attrs, fname, slice_num
     fname_stem = Path(fname).stem
     save_dir = Path(f"sens_maps_after_checking_fft/train/{fname_stem}")  # Adjust split as needed
     sens_map_path = save_dir / f"sens_map_slice{slice_num}.pt"
+    # print(f"Loading sensitivity map from: {sens_map_path}")
     sens_maps = torch.load(sens_map_path)
+
+    if torch.isnan(sens_maps).any():
+        print("ERROR: `sens_maps` when loaded contains NaNs!")
+        exit(1)
     
     return masked_kspace, mask, quick_recon_rss, target, fname, slice_num, sens_maps
 
@@ -248,7 +253,7 @@ def custom_transform_combine_val(kspace, mask, target, attrs, fname, slice_num):
 
     # Load precomputed sensitivity maps
     fname_stem = Path(fname).stem
-    save_dir = Path(f"sens_maps2/val/{fname_stem}")  # Adjust split as needed
+    save_dir = Path(f"sens_maps_after_checking_fft/val/{fname_stem}")  # Adjust split as needed
     sens_map_path = save_dir / f"sens_map_slice{slice_num}.pt"
     sens_maps = torch.load(sens_map_path)
     
