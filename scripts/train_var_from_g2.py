@@ -13,7 +13,7 @@ import os
 
 def train():
 
-    MODEL_NAME = "varnet-1st-attempt-after-sens-map-fix"
+    MODEL_NAME = "varnet-latent-vector-attempt-100ep"
     MODELS_DIR = '/home/sq225/trial-project/models/'
     os.makedirs(MODELS_DIR, exist_ok=True)
     model_dir = os.path.join(MODELS_DIR, MODEL_NAME)
@@ -21,7 +21,7 @@ def train():
     os.makedirs(checkpoint_dir, exist_ok=True)
 
     # Hyperparameters
-    epochs = 50
+    epochs = 100
     batch_size = 1
     learning_rate = 1e-4
     latent_dim = 128
@@ -58,7 +58,8 @@ def train():
             batch_size=batch_size,
             num_workers=1,
             combine_diff_organs=True,
-            data_paths_for_combine=data_paths_train
+            data_paths_for_combine=data_paths_train,
+            use_dataset_cache_file=False
         )
 
     data_module_val = FastMriDataModule(
@@ -70,7 +71,8 @@ def train():
             batch_size=batch_size,
             num_workers=1,
             combine_diff_organs=True,
-            data_paths_for_combine=data_paths_val
+            data_paths_for_combine=data_paths_val,
+            use_dataset_cache_file=False
         )
 
     train_loader = data_module_train.train_dataloader()
@@ -98,12 +100,12 @@ def train():
     best_val_loss = float("inf")
 
     # Initialize Weights & Biases (Wandb)
-    # wandb.init(project="latent-varnet-training", name=MODEL_NAME, config={
-    #     "epochs": epochs,
-    #     "batch_size": batch_size,
-    #     "learning_rate": learning_rate,
-    #     "latent_dim": latent_dim
-    # })
+    wandb.init(project="latent-varnet-training", name=MODEL_NAME, config={
+        "epochs": epochs,
+        "batch_size": batch_size,
+        "learning_rate": learning_rate,
+        "latent_dim": latent_dim
+    })
 
     # Training Loop
     for epoch in range(epochs):
@@ -123,6 +125,9 @@ def train():
             # Step 1: Get latent vector from the pre-trained encoder
             with torch.no_grad():
                 latent_vector, _ = encoder(quick_recon_rss)
+
+            # try a random latent vector
+            # latent_vector = torch.randn_like(latent_vector)
 
             # Step 2: Pass k-space and latent vector to VarNet
             output = varnet(masked_kspace=masked_kspace, mask=mask, latent_vector=latent_vector, sens_maps=sens_maps)
@@ -172,7 +177,7 @@ def train():
             optimizer.step()
 
             running_loss += loss.item()
-            # wandb.log({"train_loss": loss.item()})
+            wandb.log({"train_loss": loss.item()})
 
         avg_train_loss = running_loss / len(train_loader)
         print(f"Epoch [{epoch+1}/{epochs}], Train Loss: {avg_train_loss:.4f}")
@@ -222,7 +227,7 @@ def train():
 
             avg_val_loss = val_loss / len(val_loader)
             print(f"Epoch [{epoch}/{epochs}], Validation Loss: {avg_val_loss:.4f}")
-            # wandb.log({"val_loss": avg_val_loss})
+            wandb.log({"val_loss": avg_val_loss})
 
             # Save Checkpoints
             save_checkpoint(varnet, optimizer, epoch, dir=checkpoint_dir, filename=f"checkpoint_{epoch}.pth")
@@ -232,7 +237,7 @@ def train():
                 print("Saved best model checkpoint.")
 
     # Finalize Wandb
-    # wandb.finish()
+    wandb.finish()
     print("Training completed successfully!")
 
 if __name__ == '__main__':
