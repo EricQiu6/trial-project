@@ -34,7 +34,7 @@ class NormUnet(nn.Module):
         in_chans: int = 2,
         out_chans: int = 2,
         drop_prob: float = 0.0,
-        latent_dim: int = 128,  # New: latent vector dimension
+        latent_dim: int = 512,  # New: latent vector dimension
     ):
         super().__init__()
         self.latent_dim = latent_dim
@@ -398,6 +398,14 @@ class VarNetBlock(nn.Module):
         # print("sens_reduce - sens_maps min/max:", sens_maps.min().item(), sens_maps.max().item())
         if torch.isnan(sens_maps).any():
             print("ERROR: `sens_maps` contains NaNs!")
+            exit(1)
+
+        print("ifft_output shape:", ifft_output.shape)
+        print("sens_maps shape:", sens_maps.shape)
+        if ifft_output.shape != sens_maps.shape:
+            print("ERROR: ifft_output and sens_maps shapes do not match!")
+            print("ifft_output shape:", ifft_output.shape)
+            print("sens_maps shape:", sens_maps.shape)
             exit(1)
 
         complex_mul_output = fastmri.complex_mul(ifft_output, fastmri.complex_conj(sens_maps))

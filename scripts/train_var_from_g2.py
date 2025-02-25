@@ -13,7 +13,7 @@ import os
 
 def train():
 
-    MODEL_NAME = "varnet-latent-vector-attempt-100ep"
+    MODEL_NAME = "varnet-latent-vector-no-coil-no-latent-crop"
     MODELS_DIR = '/home/sq225/trial-project/models/'
     os.makedirs(MODELS_DIR, exist_ok=True)
     model_dir = os.path.join(MODELS_DIR, MODEL_NAME)
@@ -24,7 +24,8 @@ def train():
     epochs = 100
     batch_size = 1
     learning_rate = 1e-4
-    latent_dim = 128
+    # modify in normunet
+    latent_dim = 512
 
     # Define URLs and paths
     varnet_model_url = "https://dl.fbaipublicfiles.com/fastMRI/trained_models/varnet/knee_leaderboard_state_dict.pt"
@@ -83,8 +84,8 @@ def train():
     varnet = LatentVarNet(num_cascades=1)
 
     # Encoder
-    encoder = load_model("/home/sq225/trial-project/models/wandb-1st-attempt/checkpoints/checkpoint_9.pth")
-    # encoder = load_model("/Users/ericq/trial-project/models/wandb-1st-attempt/checkpoints/checkpoint_9.pth")
+    # encoder = load_model("/home/sq225/trial-project/models/wandb-1st-attempt/checkpoints/checkpoint_9.pth")
+    encoder = load_model("/home/sq225/trial-project/resnet-models/resnet18-varnet-loader-100ep/checkpoints/resnet18-varnet-loader-100ep_best.pth")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -99,7 +100,6 @@ def train():
     # Track the best validation loss for checkpointing
     best_val_loss = float("inf")
 
-    # Initialize Weights & Biases (Wandb)
     wandb.init(project="latent-varnet-training", name=MODEL_NAME, config={
         "epochs": epochs,
         "batch_size": batch_size,
@@ -236,7 +236,6 @@ def train():
                 save_checkpoint(varnet, optimizer, epoch, dir=checkpoint_dir, filename=f"{MODEL_NAME}_best.pth")
                 print("Saved best model checkpoint.")
 
-    # Finalize Wandb
     wandb.finish()
     print("Training completed successfully!")
 

@@ -29,7 +29,7 @@ def visualize_reconstructions(model, dataloader, device="cuda", save_path=None):
         )
         
         # Extract latent vector from encoder
-        encoder = load_model("/home/sq225/trial-project/models/wandb-1st-attempt/checkpoints/checkpoint_9.pth")
+        encoder = load_model("/home/sq225/trial-project/resnet-models/resnet18-varnet-loader-100ep/checkpoints/resnet18-varnet-loader-100ep_best.pth")
         encoder.to(device)
         encoder.eval()
         latent_vector, _ = encoder(quick_recon_rss)
@@ -72,7 +72,7 @@ def visualize_reconstructions(model, dataloader, device="cuda", save_path=None):
             plt.show()
 
 if __name__ == "__main__":
-    checkpoint_path = "/home/sq225/trial-project/models/varnet-latent-vector-attempt-100ep/checkpoints/varnet-latent-vector-attempt-100ep_best.pth"  # Update with actual checkpoint
+    checkpoint_path = "/home/sq225/trial-project/models/varnet-latent-vector-no-coil-no-latent-crop/checkpoints/varnet-latent-vector-no-coil-no-latent-crop_best.pth"  # Update with actual checkpoint
     device = "cuda" if torch.cuda.is_available() else "cpu"
     
     # Load model
@@ -98,4 +98,4 @@ if __name__ == "__main__":
     val_loader = data_module_val.val_dataloader()
     
     # Run visualization
-    visualize_reconstructions(model, val_loader, device, "/home/sq225/trial-project/scripts/visualization_varnet-latent-vector-attempt-100ep_best.png")  # Update with actual save path
+    visualize_reconstructions(model, val_loader, device, "/home/sq225/trial-project/scripts/visualization_varnet-latent-vector-no-coil-no-latent-crop_best.pth.png")  # Update with actual save path

@@ -7,9 +7,10 @@ from fastmri.data import transforms as T
 from fastmri.data.subsample import create_mask_for_mask_type
 from data_module_custom import FastMriDataModule
 
+# use this one for sensitivity maps computation
 def custom_transform_combine(kspace, mask, target, attrs, fname, slice_num):
 
-    kspace = handle_coil_variability(kspace)
+    # kspace = handle_coil_variability(kspace)
 
     mask_func = create_mask_for_mask_type('random', [0.08], [4])
     use_seed = True
@@ -78,7 +79,7 @@ def custom_transform_combine(kspace, mask, target, attrs, fname, slice_num):
     quick_recon_image = fastmri.ifft2c(masked_kspace)
     quick_recon_abs = fastmri.complex_abs(quick_recon_image)
     quick_recon_rss = fastmri.rss(quick_recon_abs, dim=0).unsqueeze(0)  # Shape [1, H, W]
-    quick_recon_rss = T.center_crop(quick_recon_rss, (128, 128))
+    # quick_recon_rss = T.center_crop(quick_recon_rss, (128, 128))
     
     return masked_kspace, mask, quick_recon_rss, target, fname, slice_num
 
@@ -162,7 +163,7 @@ def custom_transform_combine_train(kspace, mask, target, attrs, fname, slice_num
 
     # Load precomputed sensitivity maps
     fname_stem = Path(fname).stem
-    save_dir = Path(f"sens_maps_no-coil-no-crop-no-latent-crop/train/{fname_stem}")  # Adjust split as needed
+    save_dir = Path(f"sens_maps_no-coil-no-latent-crop/train/{fname_stem}")  # Adjust split as needed
     sens_map_path = save_dir / f"sens_map_slice{slice_num}.pt"
     # print(f"Loading sensitivity map from: {sens_map_path}")
     sens_maps = torch.load(sens_map_path)
@@ -253,7 +254,7 @@ def custom_transform_combine_val(kspace, mask, target, attrs, fname, slice_num):
 
     # Load precomputed sensitivity maps
     fname_stem = Path(fname).stem
-    save_dir = Path(f"sens_maps_no-coil-no-crop-no-latent-crop/val/{fname_stem}")  # Adjust split as needed
+    save_dir = Path(f"sens_maps_no-coil-no-latent-crop/val/{fname_stem}")  # Adjust split as needed
     sens_map_path = save_dir / f"sens_map_slice{slice_num}.pt"
     sens_maps = torch.load(sens_map_path)
     
