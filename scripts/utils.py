@@ -18,7 +18,7 @@ def extract_latent(model, image_tensor):
     return latent_vector
 
 def load_model(checkpoint_dir, map_location='cpu'):
-  model = MRIClassifier(num_classes=2, embed_dim=512, pretrained=False)
+  model = MRIClassifier(num_classes=2, embed_dim=128, pretrained=False)
   checkpoint = torch.load(checkpoint_dir,map_location=map_location)
   model.load_state_dict(checkpoint['model_state_dict'])
   print(f"Loaded model from epoch {checkpoint['epoch']}")

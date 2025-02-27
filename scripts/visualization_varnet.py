@@ -29,7 +29,7 @@ def visualize_reconstructions(model, dataloader, device="cuda", save_path=None):
         )
         
         # Extract latent vector from encoder
-        encoder = load_model("/home/sq225/trial-project/resnet-models/resnet18-varnet-loader-100ep/checkpoints/resnet18-varnet-loader-100ep_best.pth")
+        encoder = load_model("/home/sq225/trial-project/models/wandb-1st-attempt/checkpoints/checkpoint_9.pth")
         encoder.to(device)
         encoder.eval()
         latent_vector, _ = encoder(quick_recon_rss)

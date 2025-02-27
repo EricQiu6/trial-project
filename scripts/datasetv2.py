@@ -10,7 +10,7 @@ from data_module_custom import FastMriDataModule
 # use this one for sensitivity maps computation
 def custom_transform_combine(kspace, mask, target, attrs, fname, slice_num):
 
-    # kspace = handle_coil_variability(kspace)
+    kspace = handle_coil_variability(kspace)
 
     mask_func = create_mask_for_mask_type('random', [0.08], [4])
     use_seed = True
@@ -85,7 +85,7 @@ def custom_transform_combine(kspace, mask, target, attrs, fname, slice_num):
 
 def custom_transform_combine_train(kspace, mask, target, attrs, fname, slice_num):
 
-    # kspace = handle_coil_variability(kspace)
+    kspace = handle_coil_variability(kspace)
 
     mask_func = create_mask_for_mask_type('random', [0.08], [4])
     use_seed = True
@@ -163,7 +163,7 @@ def custom_transform_combine_train(kspace, mask, target, attrs, fname, slice_num
 
     # Load precomputed sensitivity maps
     fname_stem = Path(fname).stem
-    save_dir = Path(f"sens_maps_no-coil-no-latent-crop/train/{fname_stem}")  # Adjust split as needed
+    save_dir = Path(f"sens_maps_after_checking_fft/train/{fname_stem}")  # Adjust split as needed
     sens_map_path = save_dir / f"sens_map_slice{slice_num}.pt"
     # print(f"Loading sensitivity map from: {sens_map_path}")
     sens_maps = torch.load(sens_map_path)
@@ -176,7 +176,7 @@ def custom_transform_combine_train(kspace, mask, target, attrs, fname, slice_num
 
 def custom_transform_combine_val(kspace, mask, target, attrs, fname, slice_num):
 
-    # kspace = handle_coil_variability(kspace)
+    kspace = handle_coil_variability(kspace)
 
     mask_func = create_mask_for_mask_type('random', [0.08], [4])
     use_seed = True
@@ -254,7 +254,7 @@ def custom_transform_combine_val(kspace, mask, target, attrs, fname, slice_num):
 
     # Load precomputed sensitivity maps
     fname_stem = Path(fname).stem
-    save_dir = Path(f"sens_maps_no-coil-no-latent-crop/val/{fname_stem}")  # Adjust split as needed
+    save_dir = Path(f"sens_maps_after_checking_fft/val/{fname_stem}")  # Adjust split as needed
     sens_map_path = save_dir / f"sens_map_slice{slice_num}.pt"
     sens_maps = torch.load(sens_map_path)
     

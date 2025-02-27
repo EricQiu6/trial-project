@@ -34,7 +34,7 @@ class NormUnet(nn.Module):
         in_chans: int = 2,
         out_chans: int = 2,
         drop_prob: float = 0.0,
-        latent_dim: int = 512,  # New: latent vector dimension
+        latent_dim: int = 128,  # New: latent vector dimension
     ):
         super().__init__()
         self.latent_dim = latent_dim

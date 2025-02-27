@@ -13,7 +13,7 @@ import os
 
 def train():
 
-    MODEL_NAME = "varnet-latent-vector-no-coil-no-latent-crop"
+    MODEL_NAME = "varnet-latent-vector-no-latent-crop"
     MODELS_DIR = '/home/sq225/trial-project/models/'
     os.makedirs(MODELS_DIR, exist_ok=True)
     model_dir = os.path.join(MODELS_DIR, MODEL_NAME)
