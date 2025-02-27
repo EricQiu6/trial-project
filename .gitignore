@@ -7,7 +7,15 @@
 /.vscode
 /scripts/fixed_sens_maps.pth
 /scripts/knee_leaderboard_state_dict.pt
+/scripts/brain_leaderboard_state_dict.pt
 /scripts/dataset_cache.pkl
+*.png
+/scripts/data_module.py
+/scripts/dataset.py
+/scripts/mod_brain_varnet.py
+/scripts/varnet_module_v2.py
+/scripts/varnet_module_v3.py
+/scripts/varnet_module_with_latent.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

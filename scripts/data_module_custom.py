@@ -250,7 +250,7 @@ class FastMriDataModule(pl.LightningDataModule):
                 use_dataset_cache=self.use_dataset_cache_file,
                 raw_sample_filter=raw_sample_filter,
             )
-        elif self.combine_diff_organs:
+        elif self.combine_diff_organs: # what I exclusively use
             data_paths = self.data_paths_for_combine
             data_transforms = [data_transform] * len(data_paths)
             challenges = [self.challenge] * len(data_paths)
