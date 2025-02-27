@@ -6,6 +6,32 @@ import fastmri
 from fastmri.data import transforms as T
 from fastmri.data.subsample import create_mask_for_mask_type
 from data_module_custom import FastMriDataModule
+from fastmri.data.transforms import center_crop
+
+def ifft_crop_fft(kspace: torch.Tensor, crop_size=(320, 320)) -> torch.Tensor:
+    """
+    Crops k-space to `crop_size` in the spatial domain by:
+      1) Inverse FFT from k-space to image space
+      2) Center-crop the image
+      3) FFT back to k-space
+    
+    Args:
+        kspace: [C, H, W, 2] complex k-space (e.g. multi-coil if C > 1).
+        crop_size: (height, width) to crop in image space.
+    
+    Returns:
+        A new k-space tensor [C, crop_h, crop_w, 2].
+    """
+    # 1) Go to image space
+    image = fastmri.ifft2c(kspace)  # [C, H, W, 2] -> image domain
+    print("image shape in ifft:", image.shape) 
+    quick_recon_abs = fastmri.complex_abs(image)
+    quick_recon_rss = fastmri.rss(quick_recon_abs, dim=0)
+    # 2) Center-crop the image
+    image_cropped = center_crop(quick_recon_rss, crop_size)
+    # 3) Transform back to k-space
+    kspace_cropped = fastmri.fft2c(image_cropped)
+    return kspace_cropped
 
 # use this one for sensitivity maps computation
 def custom_transform_combine(kspace, mask, target, attrs, fname, slice_num):
@@ -27,7 +53,7 @@ def custom_transform_combine(kspace, mask, target, attrs, fname, slice_num):
     # print(f"K-space shape before: {kspace.shape}")
     kspace_torch = T.to_tensor(kspace)
     # print(f"K-space shape torch: {kspace_torch.shape}")
-    kspace_torch = center_crop_kspace(kspace_torch, crop_size)
+    kspace_torch = ifft_crop_fft(kspace_torch, crop_size)
     # print(f"K-space shape after: {kspace_torch.shape}")
     seed = None if not use_seed else tuple(map(ord, fname))
     acq_start = attrs["padding_left"]
@@ -79,7 +105,7 @@ def custom_transform_combine(kspace, mask, target, attrs, fname, slice_num):
     quick_recon_image = fastmri.ifft2c(masked_kspace)
     quick_recon_abs = fastmri.complex_abs(quick_recon_image)
     quick_recon_rss = fastmri.rss(quick_recon_abs, dim=0).unsqueeze(0)  # Shape [1, H, W]
-    # quick_recon_rss = T.center_crop(quick_recon_rss, (128, 128))
+    quick_recon_rss = T.center_crop(quick_recon_rss, (128, 128))
     
     return masked_kspace, mask, quick_recon_rss, target, fname, slice_num
 
@@ -102,7 +128,7 @@ def custom_transform_combine_train(kspace, mask, target, attrs, fname, slice_num
     # print(f"K-space shape before: {kspace.shape}")
     kspace_torch = T.to_tensor(kspace)
     # print(f"K-space shape torch: {kspace_torch.shape}")
-    kspace_torch = center_crop_kspace(kspace_torch, crop_size)
+    kspace_torch = ifft_crop_fft(kspace_torch, crop_size)
     # print(f"K-space shape after: {kspace_torch.shape}")
     seed = None if not use_seed else tuple(map(ord, fname))
     acq_start = attrs["padding_left"]
@@ -155,7 +181,7 @@ def custom_transform_combine_train(kspace, mask, target, attrs, fname, slice_num
         quick_recon_image = fastmri.ifft2c(masked_kspace)
         quick_recon_abs = fastmri.complex_abs(quick_recon_image)
         quick_recon_rss = fastmri.rss(quick_recon_abs, dim=0).unsqueeze(0)  # Shape [1, H, W]
-        # quick_recon_rss = T.center_crop(quick_recon_rss, (128, 128))
+        quick_recon_rss = T.center_crop(quick_recon_rss, (128, 128))
     except (RuntimeError, ValueError) as e:
         print("Invalid shapes encountered:", e)
         print(f"quick_recon_rss shape: {quick_recon_rss.shape if 'quick_recon_rss' in locals() else 'N/A'}")
@@ -163,7 +189,7 @@ def custom_transform_combine_train(kspace, mask, target, attrs, fname, slice_num
 
     # Load precomputed sensitivity maps
     fname_stem = Path(fname).stem
-    save_dir = Path(f"sens_maps_after_checking_fft/train/{fname_stem}")  # Adjust split as needed
+    save_dir = Path(f"sens_maps_no_weird_kspace_trans/train/{fname_stem}")  # Adjust split as needed
     sens_map_path = save_dir / f"sens_map_slice{slice_num}.pt"
     # print(f"Loading sensitivity map from: {sens_map_path}")
     sens_maps = torch.load(sens_map_path)
@@ -193,7 +219,7 @@ def custom_transform_combine_val(kspace, mask, target, attrs, fname, slice_num):
     # print(f"K-space shape before: {kspace.shape}")
     kspace_torch = T.to_tensor(kspace)
     # print(f"K-space shape torch: {kspace_torch.shape}")
-    kspace_torch = center_crop_kspace(kspace_torch, crop_size)
+    kspace_torch = ifft_crop_fft(kspace_torch, crop_size)
     # print(f"K-space shape after: {kspace_torch.shape}")
     seed = None if not use_seed else tuple(map(ord, fname))
     acq_start = attrs["padding_left"]
@@ -254,7 +280,7 @@ def custom_transform_combine_val(kspace, mask, target, attrs, fname, slice_num):
 
     # Load precomputed sensitivity maps
     fname_stem = Path(fname).stem
-    save_dir = Path(f"sens_maps_after_checking_fft/val/{fname_stem}")  # Adjust split as needed
+    save_dir = Path(f"sens_maps_no_weird_kspace_trans/val/{fname_stem}")  # Adjust split as needed
     sens_map_path = save_dir / f"sens_map_slice{slice_num}.pt"
     sens_maps = torch.load(sens_map_path)
     
@@ -400,8 +426,8 @@ def main():
     #     break
 
     data_paths = [
-        Path("/Users/ericq/trial-project/official-fitting-data/brain/multicoil_train"),
-        Path("/Users/ericq/trial-project/official-fitting-data/knee/multicoil_train"),
+        Path("/home/sq225/trial-project/data/brain-train/multicoil-train"),
+        Path("/home/sq225/trial-project/data/knee-train/multicoil-train")
     ]
 
     data_module_combined = FastMriDataModule(
@@ -411,7 +437,7 @@ def main():
         val_transform=custom_transform_combine_val,
         test_transform=custom_transform_combine_val,
         batch_size=1,
-        num_workers=2,
+        num_workers=1,
         combine_diff_organs=True,
         data_paths_for_combine=data_paths
     )
@@ -422,15 +448,58 @@ def main():
     # Get train dataloader
     train_dataloader_combined = data_module_combined.train_dataloader()
 
-    # Test the loader
-    for batch in train_dataloader_combined:
-        masked_kspace, mask, quick_recon_rss, target, fname, slice_num = batch
-        print(f"Masked K-space shape: {masked_kspace.shape}")
-        print(f"Mask shape: {mask.shape}")
-        print(f"Quick Reconstruction shape: {quick_recon_rss.shape}")
-        print(f"Target shape: {target.shape}")
-        print(f"Filenames: {fname}")
-        print(f"Slice numbers: {slice_num}")
+    # extract a batch and visualize masked kspace, quick_recon_rss, and target
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    sample = next(iter(train_dataloader_combined))
+    masked_kspace, mask, quick_recon_rss, target, fname, slice_num, sens_maps = sample
+
+    # For visualization, we assume batch size = 1.
+    # Visualize the magnitude of the k-space data from the first coil.
+    mk = masked_kspace[0]  # shape: [coils, H, W, 2]
+    coil0 = mk[0]  # take first coil -> shape: [H, W, 2]
+    coil0_complex = coil0[..., 0] + 1j * coil0[..., 1]
+    coil0_abs = np.abs(coil0_complex)
+
+    # Convert quick_recon_rss and target to numpy arrays.
+    # quick_recon_rss is expected to be a tensor of shape [1, H, W]
+    print("quick_recon_rss shape: ", quick_recon_rss.shape)
+    print("target shape: ", target.shape)
+    qr = quick_recon_rss[0][0].detach().cpu().numpy()
+    tgt = target[0].detach().cpu().numpy()
+
+    plt.figure(figsize=(15, 5))
+    
+    plt.subplot(1, 3, 1)
+    plt.title("Masked K-space (Coil 0 Magnitude, log-scale)")
+    plt.imshow(np.log(coil0_abs + 1e-6), cmap='gray')
+    plt.colorbar()
+
+    plt.subplot(1, 3, 2)
+    plt.title("Quick Reconstruction RSS (for encoder)")
+    plt.imshow(qr, cmap='gray')
+    plt.colorbar()
+
+    plt.subplot(1, 3, 3)
+    plt.title("Target")
+    plt.imshow(tgt, cmap='gray')
+    plt.colorbar()
+
+    plt.tight_layout()
+    # save the figure
+    plt.savefig("datasetv2_visualized.png")
+    
+
+    # # Test the loader
+    # for batch in train_dataloader_combined:
+    #     masked_kspace, mask, quick_recon_rss, target, fname, slice_num = batch
+    #     print(f"Masked K-space shape: {masked_kspace.shape}")
+    #     print(f"Mask shape: {mask.shape}")
+    #     print(f"Quick Reconstruction shape: {quick_recon_rss.shape}")
+    #     print(f"Target shape: {target.shape}")
+    #     print(f"Filenames: {fname}")
+    #     print(f"Slice numbers: {slice_num}")
 
     # data_module_mixed = FastMriDataModule(
     #     data_path=Path("/Users/ericq/trial-project/official-fitting-data/mix/"),

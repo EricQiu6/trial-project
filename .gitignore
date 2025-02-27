@@ -7,7 +7,9 @@
 /.vscode
 /scripts/fixed_sens_maps.pth
 /scripts/knee_leaderboard_state_dict.pt
+/scripts/brain_leaderboard_state_dict.pt
 /scripts/dataset_cache.pkl
+*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
