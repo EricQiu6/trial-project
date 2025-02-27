@@ -170,9 +170,12 @@ def evaluate_model(model, loader, device, use_random_vector=False, has_latent_pa
                 # masked_kspace = torch.clamp(masked_kspace, min=-1e3, max=1e3)  # Prevent extreme values
                 # masked_kspace = masked_kspace / (masked_kspace.abs().max() + 1e-6)  # Normalize to a safe range
 
-                masked_kspace = masked_kspace + 1e-8  # Add epsilon to prevent division by zero
+                masked_kspace = masked_kspace + 1e-13  # Add epsilon to prevent division by zero
 
                 output = model(masked_kspace, mask)
+                if torch.isnan(output).any():
+                    print("WARNING: Output contains NaNs!")
+                    exit(1)
 
         # center-crop output & target
         output, target = transforms.center_crop_to_smallest(output, target)
@@ -267,7 +270,7 @@ plt.legend()
 plt.title("Knee vs Brain PSNR Comparison")
 plt.show()
 # save the figure
-plt.savefig("knee_vs_brain_psnr_comparison_benchmark.png")
+plt.savefig("knee_vs_brain_psnr_comparison_benchmark3.png")
 
 plt.figure()
 for model_tag, vals in results.items():
@@ -277,4 +280,4 @@ plt.ylabel("Brain SSIM")
 plt.legend()
 plt.title("Knee vs Brain SSIM Comparison")
 # save the figure
-plt.savefig("knee_vs_brain_ssim_comparison_benchmark.png")
+plt.savefig("knee_vs_brain_ssim_comparison_benchmark3.png")
