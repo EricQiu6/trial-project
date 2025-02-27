@@ -166,9 +166,9 @@ def evaluate_model(model, loader, device, use_random_vector=False, has_latent_pa
             if has_latent_param:
                 output = model(masked_kspace, mask, latent_vector, sens_maps)
             else:
-                masked_kspace = torch.nan_to_num(masked_kspace, nan=0.0, posinf=1.0, neginf=-1.0)  # Fix NaNs
-                masked_kspace = torch.clamp(masked_kspace, min=-1e3, max=1e3)  # Prevent extreme values
-                masked_kspace = masked_kspace / (masked_kspace.abs().max() + 1e-6)  # Normalize to a safe range
+                # masked_kspace = torch.nan_to_num(masked_kspace, nan=0.0, posinf=1.0, neginf=-1.0)  # Fix NaNs
+                # masked_kspace = torch.clamp(masked_kspace, min=-1e3, max=1e3)  # Prevent extreme values
+                # masked_kspace = masked_kspace / (masked_kspace.abs().max() + 1e-6)  # Normalize to a safe range
 
                 masked_kspace = masked_kspace + 1e-8  # Add epsilon to prevent division by zero
 
