@@ -16,6 +16,7 @@
 /scripts/varnet_module_v2.py
 /scripts/varnet_module_v3.py
 /scripts/varnet_module_with_latent.py
+/scripts-copy/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

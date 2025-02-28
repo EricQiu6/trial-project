@@ -1,6 +1,5 @@
 import torch
 from torch.utils.data import DataLoader
-from dataset import FastMRIClassificationDataset
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
 from pathlib import Path
@@ -115,14 +114,15 @@ def visualize_tsne(latent_vectors, labels, perplexity=30):
     plt.title("t-SNE of Latent Vectors (Brain vs. Knee)")
     plt.xlabel("Dimension 1")
     plt.ylabel("Dimension 2")
-    plt.savefig("tsne_plot2_for_no-coil-no-crop-no-latent-crop.png", dpi=300)
+    plt.savefig("tsne_plot_for_vult.png", dpi=300) # change image name here
 
 # from model import MRIClassifier  # or however you import it
 # from dataset import FastMRIClassificationDataset
 
 def main():
 
-    model = load_model("/home/sq225/trial-project/resnet-models/resnet18-varnet-loader-100ep/checkpoints/resnet18-varnet-loader-100ep_best.pth")
+    # change model path here
+    model = load_model("/home/sq225/trial-project/resnet-models/resnet18-varnet-loader-100ep-128dim/checkpoints/resnet18-varnet-loader-100ep-128dim_best.pth")
 
     print("starting creating dataset")
 

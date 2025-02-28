@@ -25,7 +25,7 @@ def train():
     batch_size = 1
     learning_rate = 1e-4
     # modify in normunet
-    latent_dim = 512
+    latent_dim = 128
 
     # Define URLs and paths
     varnet_model_url = "https://dl.fbaipublicfiles.com/fastMRI/trained_models/varnet/knee_leaderboard_state_dict.pt"

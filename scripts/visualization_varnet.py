@@ -1,7 +1,6 @@
 import torch
 import matplotlib.pyplot as plt
-from train_var_from_g2 import train
-from datasetv2 import custom_transform_combine_train, custom_transform_combine_val, FastMriDataModule
+from datasetvult import custom_transform_combine_train, custom_transform_combine_val, FastMriDataModule
 from utils import load_checkpoint, load_model
 from fastmri.data import transforms
 from pathlib import Path
@@ -47,7 +46,7 @@ def visualize_reconstructions(model, dataloader, device="cuda", has_latent_param
         )
         
         # Extract latent vector from encoder
-        encoder = load_model("/home/sq225/trial-project/models/wandb-1st-attempt/checkpoints/checkpoint_9.pth")
+        encoder = load_model("/home/sq225/trial-project/resnet-models/resnet18-varnet-loader-100ep-128dim/checkpoints/resnet18-varnet-loader-100ep-128dim_best.pth")
         encoder.to(device)
         encoder.eval()
         latent_vector, _ = encoder(quick_recon_rss)
@@ -129,4 +128,4 @@ if __name__ == "__main__":
     val_loader = data_module_val.val_dataloader()
     
     # Run visualization
-    visualize_reconstructions(model, val_loader, device, has_latent_param=False, save_path= "/home/sq225/trial-project/scripts/visualization_varnet-brain_leaderboard_state_dict.png")  # Update with actual save path
+    visualize_reconstructions(model, val_loader, device, has_latent_param=False, save_path= "/home/sq225/trial-project/scripts/vult-visualization_varnet-brain_leaderboard_state_dict.png")  # Update with actual save path
