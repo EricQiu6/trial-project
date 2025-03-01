@@ -2,7 +2,7 @@ import torch
 import torch.optim as optim
 import wandb
 from fastmri.losses import SSIMLoss
-from datasetv2 import custom_transform_combine_train, custom_transform_combine_val, FastMriDataModule
+from datasetvult import custom_transform_combine_train, custom_transform_combine_val, FastMriDataModule
 from varnet_module_vds import LatentVarNet
 from pathlib import Path
 from utils import load_model, save_checkpoint
@@ -10,10 +10,12 @@ from fastmri.data import transforms
 import torch.nn.functional as F
 # from varnet_module_vds import download_varnet_model, save_sensitivity_maps
 import os
+import numpy as np
+import fastmri.evaluate as evaluate
 
 def train():
 
-    MODEL_NAME = "varnet-latent-vector-no-latent-crop"
+    MODEL_NAME = "varnet-latent-128dim-100ep-ifft-crop-fft-correct-seed-and-data"
     MODELS_DIR = '/home/sq225/trial-project/models/'
     os.makedirs(MODELS_DIR, exist_ok=True)
     model_dir = os.path.join(MODELS_DIR, MODEL_NAME)
@@ -85,7 +87,7 @@ def train():
 
     # Encoder
     # encoder = load_model("/home/sq225/trial-project/models/wandb-1st-attempt/checkpoints/checkpoint_9.pth")
-    encoder = load_model("/home/sq225/trial-project/resnet-models/resnet18-varnet-loader-100ep/checkpoints/resnet18-varnet-loader-100ep_best.pth")
+    encoder = load_model("/home/sq225/trial-project/resnet-models/resnet18--100ep-128dim-ifft-crop-fft/checkpoints/resnet18--100ep-128dim-ifft-crop-fft_best.pth")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -185,6 +187,7 @@ def train():
         # Validation Loop
         varnet.eval()
         val_loss = 0.0
+        psnr_vals, ssim_vals = [], []
         if epoch % 3 == 0:
             with torch.no_grad():
                 for batch in val_loader:
@@ -225,9 +228,22 @@ def train():
                     loss = criterion(output, target, data_range)
                     val_loss += loss.item()
 
+                    # log psnr and ssim
+                    # convert to numpy
+                    output = output.cpu().numpy()
+                    target = target.cpu().numpy()
+                    ssim_val = evaluate.ssim(output, target)
+                    psnr_val = evaluate.psnr(output, target)
+                    ssim_vals.append(ssim_val)
+                    psnr_vals.append(psnr_val)
+
             avg_val_loss = val_loss / len(val_loader)
+            avg_psnr = np.mean(psnr_vals)
+            avg_ssim = np.mean(ssim_vals)
             print(f"Epoch [{epoch}/{epochs}], Validation Loss: {avg_val_loss:.4f}")
             wandb.log({"val_loss": avg_val_loss})
+            wandb.log({"val_psnr": avg_psnr})
+            wandb.log({"val_ssim": avg_ssim})
 
             # Save Checkpoints
             save_checkpoint(varnet, optimizer, epoch, dir=checkpoint_dir, filename=f"checkpoint_{epoch}.pth")

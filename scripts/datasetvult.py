@@ -211,7 +211,7 @@ def custom_transform_combine_train(kspace, mask, target, attrs, fname, slice_num
     kspace_torch = to_tensor(kspace)
 
   mask_func = create_mask_for_mask_type('random', [0.08], [4])
-  use_seed = True # use set seed for val
+  use_seed = False # use random seed for val
 
   seed = None if not use_seed else tuple(map(ord, fname))
   acq_start = attrs["padding_left"]
@@ -261,7 +261,7 @@ def custom_transform_combine_train(kspace, mask, target, attrs, fname, slice_num
 
   # has precomputed sensitivity maps in train/val
   fname_stem = Path(fname).stem
-  save_dir = Path(f"sens_maps_vult/train/{fname_stem}")  # Adjust split as needed
+  save_dir = Path(f"sens_maps_ifft_crop_fft/train/{fname_stem}")  # Adjust split as needed
   sens_map_path = save_dir / f"sens_map_slice{slice_num}.pt"
   sens_maps = torch.load(sens_map_path)
 
@@ -290,7 +290,7 @@ def custom_transform_combine_val(kspace, mask, target, attrs, fname, slice_num):
     kspace_torch = to_tensor(kspace)
 
   mask_func = create_mask_for_mask_type('random', [0.08], [4])
-  use_seed = False # use random seed for train
+  use_seed = True # use seed for val
 
   seed = None if not use_seed else tuple(map(ord, fname))
   acq_start = attrs["padding_left"]
@@ -340,7 +340,7 @@ def custom_transform_combine_val(kspace, mask, target, attrs, fname, slice_num):
 
   # has precomputed sensitivity maps in train/val
   fname_stem = Path(fname).stem
-  save_dir = Path(f"sens_maps_vult/val/{fname_stem}")  # Adjust split as needed
+  save_dir = Path(f"sens_maps_ifft_crop_fft/val/{fname_stem}")  # Adjust split as needed
   sens_map_path = save_dir / f"sens_map_slice{slice_num}.pt"
   sens_maps = torch.load(sens_map_path)
 

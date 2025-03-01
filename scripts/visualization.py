@@ -114,7 +114,7 @@ def visualize_tsne(latent_vectors, labels, perplexity=30):
     plt.title("t-SNE of Latent Vectors (Brain vs. Knee)")
     plt.xlabel("Dimension 1")
     plt.ylabel("Dimension 2")
-    plt.savefig("tsne_plot_for_vult.png", dpi=300) # change image name here
+    plt.savefig("tsne_plot_ifft_crop_fft_correct_seed.png", dpi=300) # change image name here
 
 # from model import MRIClassifier  # or however you import it
 # from dataset import FastMRIClassificationDataset
@@ -122,7 +122,7 @@ def visualize_tsne(latent_vectors, labels, perplexity=30):
 def main():
 
     # change model path here
-    model = load_model("/home/sq225/trial-project/resnet-models/resnet18-varnet-loader-100ep-128dim/checkpoints/resnet18-varnet-loader-100ep-128dim_best.pth")
+    model = load_model("/home/sq225/trial-project/resnet-models/resnet18--100ep-128dim-ifft-crop-fft/checkpoints/resnet18--100ep-128dim-ifft-crop-fft_best.pth")
 
     print("starting creating dataset")
 

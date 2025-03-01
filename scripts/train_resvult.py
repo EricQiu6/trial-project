@@ -16,7 +16,7 @@ import utils
 
 def train():
 
-    MODEL_NAME = "resnet18--100ep-128dim-ifft-crop-fft"
+    MODEL_NAME = "resnet18--100ep-128dim-ifft-crop-fft-correct-seed"
     MODELS_DIR = '/home/sq225/trial-project/resnet-models/'
     os.makedirs(MODELS_DIR, exist_ok=True)
     model_dir = os.path.join(MODELS_DIR, MODEL_NAME)
